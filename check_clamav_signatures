@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+#
+# check_clamav_signatures - Nagios plugin to monitor ClamAV signatures are up to date.
+#
+# Released under the MIT License.
+#
+# https://github.com/tommarshall/nagios-check-clamav-signatures
+#
+
+VERSION=0.1.0
+OK=0
+WARNING=1
+CRITICAL=2
+UNKNOWN=3
+
+#
+# Output version.
+#
+
+version() {
+  echo "check_clamav_signatures $VERSION"
+}
+
+#
+# Output usage information.
+#
+
+usage() {
+  echo 'Usage: ./check_clamav_signatures'
+}
+
+#
+# Output help information.
+#
+
+help() {
+  usage
+  cat <<-EOF
+
+  Examples:
+    ./check_clamav_signatures
+
+  Options:
+    -V, --version               output version
+    -h, --help                  output help information
+
+  For more information, see https://github.com/tommarshall/nagios-check-clamav-signatures
+
+EOF
+}
+
+#
+# Parse argv.
+#
+
+while test $# -ne 0; do
+  ARG=$1; shift
+  case $ARG in
+    -V|--version) version; exit ;;
+    -h|--help) help; exit ;;
+    *)
+      echo "UNKNOWN: Unrecognised argument: $ARG"
+      usage >&2
+      exit $UNKNOWN
+      ;;
+  esac
+done
+
+#
+# Showtime.
+#
+
+echo "UNKNOWN: Unimplemented"
+exit $UNKNOWN
