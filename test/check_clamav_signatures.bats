@@ -16,13 +16,6 @@ load 'test_helper'
 
 # Defaults
 #------------------------------------------------------------------------------
-@test "exits UNKNOWN when unimplemented" {
-  run $BASE_DIR/check_clamav_signatures
-
-  assert_failure 3
-  assert_output "UNKNOWN: Unimplemented"
-}
-
 
 # --version
 # ------------------------------------------------------------------------------

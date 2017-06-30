@@ -70,6 +70,3 @@ done
 #
 # Showtime.
 #
-
-echo "UNKNOWN: Unimplemented"
-exit $UNKNOWN
