@@ -13,6 +13,7 @@ OK=0
 WARNING=1
 CRITICAL=2
 UNKNOWN=3
+CLAM_LIB_DIR=/var/lib/clamav
 
 #
 # Output version.
@@ -42,6 +43,7 @@ help() {
     ./check_clamav_signatures
 
   Options:
+    -p, --path <path>           path to ClamAV lib directory, if not $CLAM_LIB_DIR
     -V, --version               output version
     -h, --help                  output help information
 
@@ -57,6 +59,7 @@ EOF
 while test $# -ne 0; do
   ARG=$1; shift
   case $ARG in
+    -p|--path) CLAM_LIB_DIR=$1; shift ;;
     -V|--version) version; exit ;;
     -h|--help) help; exit ;;
     *)
@@ -70,3 +73,35 @@ done
 #
 # Showtime.
 #
+
+DAILY_SIGNATURES_PATH="${CLAM_LIB_DIR}/daily.cld"
+MAIN_SIGNATURES_PATH="${CLAM_LIB_DIR}/main.cvd"
+
+# extract the daily signatures version
+INSTALLED_DAILY_VERSION=$(sigtool -i ${DAILY_SIGNATURES_PATH} 2>/dev/null | grep Version | sed -e 's/Version: //')
+
+# extract the main signatures version
+INSTALLED_MAIN_VERSION=$(sigtool -i ${MAIN_SIGNATURES_PATH} 2>/dev/null | grep Version | sed -e 's/Version: //')
+
+# query the DNS record
+DNS_TXT_RECORD=$(host -t txt current.cvd.clamav.net)
+
+# extract the versions from the DNS TXT record
+CURRENT_DAILY_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 3)
+CURRENT_MAIN_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 2)
+
+# determine the difference between the current and installed versions
+DAILY_VERSION_DELTA=$((CURRENT_DAILY_VERSION-INSTALLED_DAILY_VERSION))
+MAIN_VERSION_DELTA=$((CURRENT_MAIN_VERSION-INSTALLED_MAIN_VERSION))
+
+if [ $DAILY_VERSION_DELTA -gt 0 -o $MAIN_VERSION_DELTA -gt 0 ]; then
+  echo "CRITICAL: Signatures expired;" \
+    "daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
+    "main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
+  exit $CRITICAL
+fi
+
+echo "OK: Signatures up to date;"\
+  "daily version: ${INSTALLED_DAILY_VERSION}," \
+  "main version: ${INSTALLED_MAIN_VERSION}"
+exit $OK

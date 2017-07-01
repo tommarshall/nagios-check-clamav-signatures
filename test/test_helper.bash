@@ -1,10 +1,17 @@
 # !/usr/bin/env bash
 
+load '../vendor/bats-mock/stub'
+
 BASE_DIR=$(dirname $BATS_TEST_DIRNAME)
 TMP_DIRECTORY=$(mktemp -d)
 
 setup() {
   cd $TMP_DIRECTORY
+
+  # setup local clamav lib dir for testing purposes
+  mkdir -p var/lib/clamav
+  cp $BASE_DIR/test/fixture/daily.cld var/lib/clamav/daily.cld
+  cp $BASE_DIR/test/fixture/main.cvd var/lib/clamav/main.cvd
 }
 
 teardown() {

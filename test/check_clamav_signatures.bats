@@ -16,6 +16,35 @@ load 'test_helper'
 
 # Defaults
 #------------------------------------------------------------------------------
+@test "exits OK if signatures are up to date" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_success
+  assert_output "OK: Signatures up to date; daily version: 23538, main version: 58"
+
+  unstub host
+}
+
+@test "exits CRITICAL if daily signatures have expired" {
+  cp $BASE_DIR/test/fixture/daily.expired.cld var/lib/clamav/daily.cld
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 2
+  [[ "$output" == "CRITICAL: Signatures expired; daily version: 23515 ("*" behind), main version: 58 ("*" behind)" ]]
+}
+
+@test "exits CRITICAL if main signatures have expired" {
+  cp $BASE_DIR/test/fixture/main.expired.cvd var/lib/clamav/main.cvd
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 2
+  [[ "$output" == "CRITICAL: Signatures expired; daily version: 23538 ("*" behind), main version: 56 ("*" behind)" ]]
+}
 
 # --version
 # ------------------------------------------------------------------------------
