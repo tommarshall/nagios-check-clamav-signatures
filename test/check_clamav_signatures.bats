@@ -14,6 +14,15 @@ load 'test_helper'
   assert_line --partial "Usage:"
 }
 
+@test "exits UNKNOWN if unable to locate the clam lib directory" {
+  rm -r var/lib/clamav
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to locate ClamAV lib directory"
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {

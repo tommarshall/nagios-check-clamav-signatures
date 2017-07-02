@@ -74,6 +74,12 @@ done
 # Showtime.
 #
 
+# ensure the clam lib dir exists
+if [ ! -d "$CLAM_LIB_DIR" ]; then
+  echo "UNKNOWN: Unable to locate ClamAV lib directory"
+  exit $UNKNOWN
+fi
+
 DAILY_SIGNATURES_PATH="${CLAM_LIB_DIR}/daily.cld"
 MAIN_SIGNATURES_PATH="${CLAM_LIB_DIR}/main.cvd"
 
