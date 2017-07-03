@@ -23,6 +23,24 @@ load 'test_helper'
   assert_output "UNKNOWN: Unable to locate ClamAV lib directory"
 }
 
+@test "exits UNKNOWN if unable to locate the daily signatures file" {
+  rm var/lib/clamav/daily.cld
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to locate installed daily signatures"
+}
+
+@test "exits UNKNOWN if unable to locate the main signatures file" {
+  rm var/lib/clamav/main.cvd
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to locate installed main signatures"
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {
