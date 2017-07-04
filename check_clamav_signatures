@@ -14,6 +14,7 @@ WARNING=1
 CRITICAL=2
 UNKNOWN=3
 CLAM_LIB_DIR=/var/lib/clamav
+NUMERICAL_REGEX='^[0-9]+$'
 
 #
 # Output version.
@@ -98,9 +99,17 @@ fi
 
 # extract the daily signatures version
 INSTALLED_DAILY_VERSION=$(sigtool -i ${DAILY_SIGNATURES_PATH} 2>/dev/null | grep Version | sed -e 's/Version: //')
+if ! [[ $INSTALLED_DAILY_VERSION =~ $NUMERICAL_REGEX ]]; then
+  echo "UNKNOWN: Unable to establish installed daily signatures version"
+  exit $UNKNOWN
+fi
 
 # extract the main signatures version
 INSTALLED_MAIN_VERSION=$(sigtool -i ${MAIN_SIGNATURES_PATH} 2>/dev/null | grep Version | sed -e 's/Version: //')
+if ! [[ $INSTALLED_MAIN_VERSION =~ $NUMERICAL_REGEX ]]; then
+  echo "UNKNOWN: Unable to establish installed main signatures version"
+  exit $UNKNOWN
+fi
 
 # query the DNS record
 DNS_TXT_RECORD=$(host -t txt current.cvd.clamav.net)

@@ -41,6 +41,24 @@ load 'test_helper'
   assert_output "UNKNOWN: Unable to locate installed main signatures"
 }
 
+@test "exits UNKNOWN if unable to establish installed daily signatures version" {
+  > var/lib/clamav/daily.cld
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to establish installed daily signatures version"
+}
+
+@test "exits UNKNOWN if unable to establish installed main signatures version" {
+  > var/lib/clamav/main.cvd
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to establish installed main signatures version"
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {
