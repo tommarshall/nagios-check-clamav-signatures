@@ -67,6 +67,30 @@ load 'test_helper'
   assert_output "UNKNOWN: DNS query to current.cvd.clamav.net failed"
 }
 
+@test "exits UNKNOWN if unable to establish daily signatures from DNS" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:NOT-A-VERSION:1499268540:1:63:46134:305"'"
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to establish current daily signatures version from DNS query"
+
+  unstub host
+}
+
+@test "exits UNKNOWN if unable to establish main signatures from DNS" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:NOT-A-VERSION:23536:1499268540:1:63:46134:305"'"
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to establish current main signatures version from DNS query"
+
+  unstub host
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {

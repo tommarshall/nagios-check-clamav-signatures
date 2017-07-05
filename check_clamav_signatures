@@ -117,9 +117,20 @@ if [ $? -ne 0 ]; then
   echo "UNKNOWN: DNS query to current.cvd.clamav.net failed"
   exit $UNKNOWN
 fi
-# extract the versions from the DNS TXT record
+
+# extract the current daily signatures version from the DNS TXT record
 CURRENT_DAILY_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 3)
+if ! [[ $CURRENT_DAILY_VERSION =~ $NUMERICAL_REGEX ]]; then
+  echo "UNKNOWN: Unable to establish current daily signatures version from DNS query"
+  exit $UNKNOWN
+fi
+
+# extract the current main signatures version from the DNS TXT record
 CURRENT_MAIN_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 2)
+if ! [[ $CURRENT_MAIN_VERSION =~ $NUMERICAL_REGEX ]]; then
+  echo "UNKNOWN: Unable to establish current main signatures version from DNS query"
+  exit $UNKNOWN
+fi
 
 # determine the difference between the current and installed versions
 DAILY_VERSION_DELTA=$((CURRENT_DAILY_VERSION-INSTALLED_DAILY_VERSION))
