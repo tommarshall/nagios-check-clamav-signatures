@@ -59,6 +59,14 @@ load 'test_helper'
   assert_output "UNKNOWN: Unable to establish installed main signatures version"
 }
 
+@test "exits UNKNOWN if DNS query fails" {
+  skip # difficult to simulate a failure of `host`
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_failure 3
+  assert_output "UNKNOWN: DNS query to current.cvd.clamav.net failed"
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {

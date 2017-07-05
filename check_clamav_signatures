@@ -113,7 +113,10 @@ fi
 
 # query the DNS record
 DNS_TXT_RECORD=$(host -t txt current.cvd.clamav.net)
-
+if [ $? -ne 0 ]; then
+  echo "UNKNOWN: DNS query to current.cvd.clamav.net failed"
+  exit $UNKNOWN
+fi
 # extract the versions from the DNS TXT record
 CURRENT_DAILY_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 3)
 CURRENT_MAIN_VERSION=$(echo $DNS_TXT_RECORD | cut -d : -f 2)
