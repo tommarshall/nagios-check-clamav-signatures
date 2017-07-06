@@ -91,6 +91,15 @@ load 'test_helper'
   unstub host
 }
 
+@test "exits UNKNOWN if a dependency is missing" {
+  PATH='/bin'
+
+  run $BASE_DIR/check_clamav_signatures
+
+  assert_failure 3
+  assert_output "UNKNOWN: Missing dependency: cut"
+}
+
 # Defaults
 #------------------------------------------------------------------------------
 @test "exits OK if signatures are up to date" {

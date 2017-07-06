@@ -75,6 +75,14 @@ done
 # Showtime.
 #
 
+# ensure we have executable dependencies
+for dependency in cut host grep sigtool sed; do
+  if ! hash $dependency >/dev/null 2>&1; then
+    echo "UNKNOWN: Missing dependency: ${dependency}"
+    exit $UNKNOWN
+  fi
+done
+
 # ensure the clam lib dir exists
 if [ ! -d "$CLAM_LIB_DIR" ]; then
   echo "UNKNOWN: Unable to locate ClamAV lib directory"
