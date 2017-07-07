@@ -15,6 +15,8 @@ setup() {
 }
 
 teardown() {
+  unstub host
+
   if [ $BATS_TEST_COMPLETED ]; then
     echo "Deleting $TMP_DIRECTORY"
     rm -rf $TMP_DIRECTORY

@@ -75,8 +75,6 @@ load 'test_helper'
 
   assert_failure 3
   assert_output "UNKNOWN: Unable to establish current daily signatures version from DNS query"
-
-  unstub host
 }
 
 @test "exits UNKNOWN if unable to establish main signatures from DNS" {
@@ -87,8 +85,6 @@ load 'test_helper'
 
   assert_failure 3
   assert_output "UNKNOWN: Unable to establish current main signatures version from DNS query"
-
-  unstub host
 }
 
 @test "exits UNKNOWN if a dependency is missing" {
@@ -110,8 +106,6 @@ load 'test_helper'
 
   assert_success
   assert_output "OK: Signatures up to date; daily version: 23538, main version: 58"
-
-  unstub host
 }
 
 @test "exits CRITICAL if daily signatures have expired" {
@@ -130,6 +124,31 @@ load 'test_helper'
 
   assert_failure 2
   [[ "$output" == "CRITICAL: Signatures expired; daily version: 23538 ("*" behind), main version: 56 ("*" behind)" ]]
+}
+
+# Contextual behaviour
+# ------------------------------------------------------------------------------
+
+@test "uses daily.cvd if daily.cld is absent" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+  mv var/lib/clamav/daily.cld var/lib/clamav/daily.cvd
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_success
+  assert_line --partial "OK:"
+}
+
+@test "uses main.cld if main.cvd is absent" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+  mv var/lib/clamav/main.cvd var/lib/clamav/main.cld
+
+  run $BASE_DIR/check_clamav_signatures --path var/lib/clamav
+
+  assert_success
+  assert_line --partial "OK:"
 }
 
 # --version

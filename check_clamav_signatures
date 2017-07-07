@@ -92,6 +92,8 @@ fi
 # ensure we have a daily signatures file
 if [ -e ${CLAM_LIB_DIR}/daily.cld ]; then
   DAILY_SIGNATURES_PATH="${CLAM_LIB_DIR}/daily.cld"
+elif [ -e ${CLAM_LIB_DIR}/daily.cvd ]; then
+  DAILY_SIGNATURES_PATH="${CLAM_LIB_DIR}/daily.cvd"
 else
   echo "UNKNOWN: Unable to locate installed daily signatures"
   exit $UNKNOWN
@@ -100,6 +102,8 @@ fi
 # ensure we have a main signatures file
 if [ -e ${CLAM_LIB_DIR}/main.cvd ]; then
   MAIN_SIGNATURES_PATH="${CLAM_LIB_DIR}/main.cvd"
+elif [ -e ${CLAM_LIB_DIR}/main.cld ]; then
+  MAIN_SIGNATURES_PATH="${CLAM_LIB_DIR}/main.cld"
 else
   echo "UNKNOWN: Unable to locate installed main signatures"
   exit $UNKNOWN
