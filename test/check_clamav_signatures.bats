@@ -151,6 +151,22 @@ load 'test_helper'
   assert_line --partial "OK:"
 }
 
+# --path
+# ------------------------------------------------------------------------------
+@test "--path overrides the default" {
+  run $BASE_DIR/check_clamav_signatures --path /not-a-path
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to locate ClamAV lib directory"
+}
+
+@test "-p is an alias for --path" {
+  run $BASE_DIR/check_clamav_signatures -p /not-a-path
+
+  assert_failure 3
+  assert_output "UNKNOWN: Unable to locate ClamAV lib directory"
+}
+
 # --version
 # ------------------------------------------------------------------------------
 @test "--version prints the version" {
