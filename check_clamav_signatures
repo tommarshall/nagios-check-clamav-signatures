@@ -29,7 +29,7 @@ version() {
 #
 
 usage() {
-  echo 'Usage: ./check_clamav_signatures'
+  echo 'Usage: ./check_clamav_signatures [options]'
 }
 
 #
