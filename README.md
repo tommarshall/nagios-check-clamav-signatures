@@ -1,5 +1,7 @@
 # Nagios check_clamav_signatures
 
+[![Build Status](https://travis-ci.org/tommarshall/nagios-check-clamav-signatures.svg?branch=master)](https://travis-ci.org/tommarshall/nagios-check-clamav-signatures)
+
 Nagios plugin to monitor ClamAV signatures are up to date.
 
 ## Installation

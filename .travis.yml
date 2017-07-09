@@ -1,7 +1,12 @@
 ---
+sudo: required
 language: bash
 
+before_install:
+  - sudo apt-get update -qq
+
 install:
+  - sudo apt-get -y install clamav
   - make setup
 
 script:
