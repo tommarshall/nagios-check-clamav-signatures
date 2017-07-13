@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Added
 
 * `-s`/`--state-file-path` for setting state file directory, default: `/var/lib/nagios`
+* `-e/--expiry` option to set daily signatures expiry threshold duration.
 
 ### Changed
 

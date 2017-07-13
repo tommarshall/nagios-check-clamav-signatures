@@ -196,6 +196,42 @@ load 'test_helper'
   assert_line --partial "OK:"
 }
 
+# --expiry
+# ------------------------------------------------------------------------------
+@test "--expiry overrides default" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+  cp $BASE_DIR/test/fixture/daily.expired.cld var/lib/clamav/daily.cld
+  touch -m -d "$(date -d '-2 hours')" var/lib/nagios/.check_clamav_signatures_ok
+
+  run $BASE_DIR/check_clamav_signatures --clam-lib-path var/lib/clamav --state-file-path var/lib/nagios --expiry '3 hours'
+
+  assert_success
+  [[ "$output" == "OK: Signatures expired, but within expiry threshold; daily version: 23515 ("*" behind), main version: 58 ("*" behind)" ]]
+}
+
+@test "-e is an alias for --expiry" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+  cp $BASE_DIR/test/fixture/daily.expired.cld var/lib/clamav/daily.cld
+  touch -m -d "$(date -d '-2 hours')" var/lib/nagios/.check_clamav_signatures_ok
+
+  run $BASE_DIR/check_clamav_signatures --clam-lib-path var/lib/clamav --state-file-path var/lib/nagios -e '3 hours'
+
+  assert_success
+  [[ "$output" == "OK: Signatures expired, but within expiry threshold; daily version: 23515 ("*" behind), main version: 58 ("*" behind)" ]]
+}
+
+@test "exits UNKNOWN if --expiry is a not a valid date string" {
+  stub host \
+    "-t txt current.cvd.clamav.net : echo 'current.cvd.clamav.net descriptive text "0.99.2:58:23538:1499326140:1:63:46137:305"'"
+
+  run $BASE_DIR/check_clamav_signatures --clam-lib-path var/lib/clamav --expiry 'not-a-valid-date'
+
+  assert_failure 3
+  assert_output "UNKNOWN: Invalid daily expiry duration specified: not-a-valid-date"
+}
+
 # --state-file-path
 # ------------------------------------------------------------------------------
 @test "--state-file-path overrides the default" {
