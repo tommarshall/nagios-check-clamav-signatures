@@ -44,7 +44,7 @@ help() {
     ./check_clamav_signatures
 
   Options:
-    -p, --path <path>           path to ClamAV lib directory, if not $CLAM_LIB_DIR
+    -l, --clam-lib-path <path>  path to ClamAV lib directory, if not $CLAM_LIB_DIR
     -V, --version               output version
     -h, --help                  output help information
 
@@ -60,7 +60,7 @@ EOF
 while test $# -ne 0; do
   ARG=$1; shift
   case $ARG in
-    -p|--path) CLAM_LIB_DIR=$1; shift ;;
+    -l|--clam-lib-path) CLAM_LIB_DIR=$1; shift ;;
     -V|--version) version; exit ;;
     -h|--help) help; exit ;;
     *)

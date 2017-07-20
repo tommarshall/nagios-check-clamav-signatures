@@ -35,7 +35,7 @@ Usage: ./check_clamav_signatures [options]
 ### Options
 
 ```
--p, --path <path>           path to ClamAV lib directory, if not /var/lib/clamav
+-l, --clam-lib-path <path>  path to ClamAV lib directory, if not /var/lib/clamav
 -V, --version               output version
 -h, --help                  output help information
 ```
