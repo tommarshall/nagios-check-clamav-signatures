@@ -6,9 +6,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## [Unreleased]
 
+### Added
+
+* `-s`/`--state-file-path` for setting state file directory, default: `/var/lib/nagios`
+
 ### Changed
 
 * Renamed `-p`/`--path` option to `-l`/`--clam-lib-path`.
+* Daily signatures now only considered expired if it has been more than 90 minutes since they were last up to date.
 
 ## v0.1.0 - 2017-07-09
 

@@ -28,16 +28,17 @@ Usage: ./check_clamav_signatures [options]
 ### Examples
 
 ```sh
-# exit OK if signatures up to date, CRITICAL if outdated
+# exit OK if signatures up to date (or updated in the last 90 minutes), CRITICAL if outdated
 ./check_clamav_signatures
 ```
 
 ### Options
 
 ```
--l, --clam-lib-path <path>  path to ClamAV lib directory, if not /var/lib/clamav
--V, --version               output version
--h, --help                  output help information
+-l, --clam-lib-path <dir>    path to ClamAV lib directory, default: $CLAM_LIB_DIR
+-s, --state-file-path <dir>  path to state file directory, default: $STATE_FILE_DIR
+-V, --version                output version
+-h, --help                   output help information
 ```
 
 ## Dependencies
