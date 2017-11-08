@@ -45,5 +45,24 @@ Usage: ./check_clamav_signatures [options]
 * Bash
 * `cut`, `host`, `grep`, `sigtool`, `sed`
 
+## Development
+
+To setup the project after cloning:
+
+```
+$ make setup
+```
+
+To run the tests:
+
+```
+$ make test
+```
+
+Tests are written with [Bats].
+
+The majority of the tests are isolated, but `sigtool` is a required dependency, and network is required for the threshold expiry tests.
+
+[Bats]: https://github.com/sstephenson/bats
 [ClamAV]: https://www.clamav.net/
 [check_clamav_signatures]: https://cdn.rawgit.com/tommarshall/nagios-check-clamav-signatures/v0.1.0/check_clamav_signatures
