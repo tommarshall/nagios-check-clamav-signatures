@@ -15,6 +15,9 @@ CRITICAL=2
 UNKNOWN=3
 CLAM_LIB_DIR=/var/lib/clamav
 NUMERICAL_REGEX='^[0-9]+$'
+EXPIRY_THRESHOLD='90 minutes'
+STATE_FILE_DIR=/var/lib/nagios
+STATE_FILE_NAME=.check_clamav_signatures_ok
 
 #
 # Output version.
@@ -43,10 +46,16 @@ help() {
   Examples:
     ./check_clamav_signatures
 
+    ./check_clamav_signatures --expiry '1 day'
+
   Options:
-    -p, --path <path>           path to ClamAV lib directory, if not $CLAM_LIB_DIR
-    -V, --version               output version
-    -h, --help                  output help information
+    -e, --expiry <duration>      duration before the daily signatures are considered expired
+    -l, --clam-lib-path <dir>    path to ClamAV lib directory, default: $CLAM_LIB_DIR
+    -s, --state-file-path <dir>  path to state file directory, default: $STATE_FILE_DIR
+    -V, --version                output version
+    -h, --help                   output help information
+
+  -e/--expiry should be a human readable duration, e.g. '1 hour', or '7 days'.
 
   For more information, see https://github.com/tommarshall/nagios-check-clamav-signatures
 
@@ -60,7 +69,9 @@ EOF
 while test $# -ne 0; do
   ARG=$1; shift
   case $ARG in
-    -p|--path) CLAM_LIB_DIR=$1; shift ;;
+    -e|--expiry) EXPIRY_THRESHOLD=$1; shift ;;
+    -l|--clam-lib-path) CLAM_LIB_DIR=$1; shift ;;
+    -s|--state-file-path) STATE_FILE_DIR=$1; shift ;;
     -V|--version) version; exit ;;
     -h|--help) help; exit ;;
     *)
@@ -82,6 +93,12 @@ for dependency in cut host grep sigtool sed; do
     exit $UNKNOWN
   fi
 done
+
+# ensure the daily expiry argument is valid
+if ! EXPIRY_THRESHOLD_TIMESTAMP="$(date --date="-$EXPIRY_THRESHOLD" +'%s' 2>/dev/null)"; then
+  echo "UNKNOWN: Invalid daily expiry duration specified: ${EXPIRY_THRESHOLD}"
+  exit $UNKNOWN
+fi
 
 # ensure the clam lib dir exists
 if [ ! -d "$CLAM_LIB_DIR" ]; then
@@ -144,15 +161,35 @@ if ! [[ $CURRENT_MAIN_VERSION =~ $NUMERICAL_REGEX ]]; then
   exit $UNKNOWN
 fi
 
+# get the last OK timestamp from the state file
+LAST_OK_TIMESTAMP="$(stat --format='%Y' $STATE_FILE_DIR/$STATE_FILE_NAME 2>/dev/null || echo '0')"
+
 # determine the difference between the current and installed versions
 DAILY_VERSION_DELTA=$((CURRENT_DAILY_VERSION-INSTALLED_DAILY_VERSION))
 MAIN_VERSION_DELTA=$((CURRENT_MAIN_VERSION-INSTALLED_MAIN_VERSION))
 
-if [ $DAILY_VERSION_DELTA -gt 0 -o $MAIN_VERSION_DELTA -gt 0 ]; then
+if [ $MAIN_VERSION_DELTA -gt 0 ]; then
   echo "CRITICAL: Signatures expired;" \
     "daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
     "main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
   exit $CRITICAL
+elif [ $DAILY_VERSION_DELTA -gt 0 ]; then
+  if [ $LAST_OK_TIMESTAMP -gt $EXPIRY_THRESHOLD_TIMESTAMP ]; then
+    echo "OK: Signatures expired, but within expiry threshold;" \
+      "daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
+      "main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
+    exit $OK
+  fi
+  echo "CRITICAL: Signatures expired;" \
+    "daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
+    "main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
+  exit $CRITICAL
+fi
+
+# modify the timestamp on the state file
+if ! touch $STATE_FILE_DIR/$STATE_FILE_NAME 2>/dev/null; then
+  echo "OK: Signatures up to date, but failed to write state file to ${STATE_FILE_DIR}/${STATE_FILE_NAME}"
+  exit $OK
 fi
 
 echo "OK: Signatures up to date;"\

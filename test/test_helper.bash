@@ -12,6 +12,10 @@ setup() {
   mkdir -p var/lib/clamav
   cp $BASE_DIR/test/fixture/daily.cld var/lib/clamav/daily.cld
   cp $BASE_DIR/test/fixture/main.cvd var/lib/clamav/main.cvd
+
+  # setup local state file dir for testing purposes
+  mkdir -p var/lib/nagios
+  touch var/lib/nagios/.check_clamav_signatures_ok
 }
 
 teardown() {
