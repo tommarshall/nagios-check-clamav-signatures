@@ -15,6 +15,8 @@ CRITICAL=2
 UNKNOWN=3
 CLAM_LIB_DIR=/var/lib/clamav
 NUMERICAL_REGEX='^[0-9]+$'
+DELTACRITICAL=0
+DELTAWARNING=0
 
 #
 # Output version.
@@ -47,6 +49,8 @@ help() {
     -p, --path <path>           path to ClamAV lib directory, if not $CLAM_LIB_DIR
     -V, --version               output version
     -h, --help                  output help information
+    -c, --critical              Allowed daily delta for critical
+    -w, --wardning              Allowed daily delta for warning
 
   For more information, see https://github.com/tommarshall/nagios-check-clamav-signatures
 
@@ -63,6 +67,8 @@ while test $# -ne 0; do
     -p|--path) CLAM_LIB_DIR=$1; shift ;;
     -V|--version) version; exit ;;
     -h|--help) help; exit ;;
+    -c|--critical) DELTACRITICAL=$1; shift ;;
+    -w|--warning) DELTAWARNING=$1; shift ;;
     *)
       echo "UNKNOWN: Unrecognised argument: $ARG"
       usage >&2
@@ -148,14 +154,37 @@ fi
 DAILY_VERSION_DELTA=$((CURRENT_DAILY_VERSION-INSTALLED_DAILY_VERSION))
 MAIN_VERSION_DELTA=$((CURRENT_MAIN_VERSION-INSTALLED_MAIN_VERSION))
 
-if [ $DAILY_VERSION_DELTA -gt 0 -o $MAIN_VERSION_DELTA -gt 0 ]; then
-  echo "CRITICAL: Signatures expired;" \
-    "daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
-    "main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
-  exit $CRITICAL
+STATUS="OK"
+
+if [ $MAIN_VERSION_DELTA -gt 0 ]; then
+	STATUS="CRITICAL"
+else 
+	if [ $DAILY_VERSION_DELTA -gt ${DELTACRITICAL} ]; then
+		STATUS="CRITICAL"
+	elif [ $DAILY_VERSION_DELTA -gt ${DELTAWARNING} ]; then
+		STATUS="WARNING"
+	fi
+
 fi
 
-echo "OK: Signatures up to date;"\
-  "daily version: ${INSTALLED_DAILY_VERSION}," \
-  "main version: ${INSTALLED_MAIN_VERSION}"
-exit $OK
+if [ ${STATUS} != "OK" ]; then
+	echo "${STATUS}: Signatures expired;" \
+		"daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
+		"main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
+else
+	echo "OK: Signatures up to date;"\
+		"daily version: ${INSTALLED_DAILY_VERSION} (${DAILY_VERSION_DELTA} behind)," \
+		"main version: ${INSTALLED_MAIN_VERSION} (${MAIN_VERSION_DELTA} behind)"
+fi
+
+case ${STATUS} in
+	OK)
+		exit $OK
+		;;
+	WARNING)
+		exit $WARNING
+		;;
+	CRITICAL)
+		exit $CRITICAL
+		;;
+esac
